@@ -8,12 +8,12 @@
 
 > **A complete MLOps pipeline for fine-tuning open-source LLMs on custom instruction datasets, complete with evaluation loops.**
 
-## 🌟 Key Features
-- ✅ **LoRA/PEFT parameter efficient fine-tuning**
-- ✅ **Automated dataset formatting and cleaning**
-- ✅ **Comprehensive model evaluation metrics**
+## Key Features
+- **LoRA/PEFT parameter efficient fine-tuning**
+- **Automated dataset formatting and cleaning**
+- **Comprehensive model evaluation metrics**
 
-## 🏗️ Architecture
+## Architecture
 
 ```mermaid
 flowchart LR
@@ -24,7 +24,7 @@ flowchart LR
     E --> F[Evaluation Suite]
 ```
 
-## 🚀 Live API Endpoint (Vercel)
+## Live API Endpoint (Vercel)
 
 This project is deployed serverless via Vercel Edge Functions. You can test the interaction directly from your terminal.
 
@@ -33,7 +33,7 @@ This project is deployed serverless via Vercel Edge Functions. You can test the 
 curl -X GET https://llm-finetuning-framework-fmh6uvqoj-dev4aibots.vercel.app/api/health
 ```
 
-## 💻 Developer Quickstart
+## Developer Quickstart
 
 ### Prerequisites
 - Python 3.11+
@@ -65,7 +65,7 @@ curl -X GET https://llm-finetuning-framework-fmh6uvqoj-dev4aibots.vercel.app/api
    npm run dev
    ```
 
-## 📁 Project Structure
+## Project Structure
 ```
 .
 ├── api/                  # Vercel serverless endpoints
@@ -76,5 +76,5 @@ curl -X GET https://llm-finetuning-framework-fmh6uvqoj-dev4aibots.vercel.app/api
 └── vercel.json           # Vercel routing configuration
 ```
 
-## 📄 License
+## License
 This project is licensed under the MIT License.
