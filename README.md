@@ -1,5 +1,7 @@
 # LLM Fine-Tuning Framework
 
+![Terminal Demo](demo.gif)
+
 A complete MLOps pipeline for fine-tuning open-source LLMs on custom instruction datasets.
 
 ## Tech Stack
@@ -24,6 +26,8 @@ This project is deployed as a serverless backend on Vercel. You can test the API
 
 ```bash
 # Example Request
+
+![Terminal Demo](demo.gif)
 curl -X GET https://llm-finetuning-framework-fmh6uvqoj-dev4aibots.vercel.app/api/health
 ```
 
