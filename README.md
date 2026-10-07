@@ -1,5 +1,9 @@
 # LLM Finetuning Framework
 
+> 🧪 **Learning build** — a course/tutorial project for studying LLM fine-tuning MLOps pipelines. Not a production system.
+
+> **Status:** Reference / learning code. The scaffold runs locally for experimentation; it is not deployed, has no production users, and has not been hardened for production use.
+
 End-to-end MLOps pipeline for fine-tuning open-source LLMs on specialized instruction datasets.
 
 [ Demo ] [ Architecture ] [ API Docs ] [ Evaluation ]
@@ -9,7 +13,7 @@ End-to-end MLOps pipeline for fine-tuning open-source LLMs on specialized instru
 Python • PyTorch • HuggingFace • LoRA • WandB
 
 ## What it does
-End-to-end MLOps pipeline for fine-tuning open-source LLMs on specialized instruction datasets. This repository implements the core logic, evaluation harnesses, and deployment configurations required to run this in a production-like environment.
+End-to-end MLOps pipeline for fine-tuning open-source LLMs on specialized instruction datasets. This repository is a learning scaffold — core logic, evaluation harnesses, and example configs for study and experimentation, not hardened for production use.
 
 ## Execution Trace (Proof of Work)
 
