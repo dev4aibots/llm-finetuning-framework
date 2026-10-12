@@ -172,11 +172,11 @@
       <p class="t-body-md section-sub">Simulated <span class="mono">lm-eval-harness</span> deltas vs. the base model, from the <span class="mono">eval_report</span> artifact.</p>
       <div class="eval-grid">
         <div class="card eval-card">
-          <div class="eval-row"><span class="t-title-md">MMLU-Pro</span><span class="t-label-lg mono delta">+3.2</span></div>
+          <div class="eval-row"><span class="t-title-md">MMLU-Pro</span><span class="t-label-lg mono delta" id="deltaMmlu">—</span></div>
           <md-linear-progress class="delta-bar" id="barMmlu" value="0" aria-label="MMLU-Pro delta"></md-linear-progress>
-          <div class="eval-row"><span class="t-title-md">MT-Bench-v2</span><span class="t-label-lg mono delta">+0.41</span></div>
+          <div class="eval-row"><span class="t-title-md">MT-Bench-v2</span><span class="t-label-lg mono delta" id="deltaMt">—</span></div>
           <md-linear-progress class="delta-bar" id="barMt" value="0" aria-label="MT-Bench-v2 delta"></md-linear-progress>
-          <div class="eval-row"><span class="t-title-md">RewardBench-2</span><span class="t-label-lg mono delta">+0.08</span></div>
+          <div class="eval-row"><span class="t-title-md">RewardBench-2</span><span class="t-label-lg mono delta" id="deltaRw">—</span></div>
           <md-linear-progress class="delta-bar" id="barRw" value="0" aria-label="RewardBench-2 delta"></md-linear-progress>
         </div>
         <div class="card gauge-card">
@@ -216,7 +216,7 @@
           <div><dt class="t-label-md">Training config hash</dt><dd class="t-body-md mono" id="mcTrainHash">—</dd></div>
           <div><dt class="t-label-md">Eval attached</dt><dd class="t-body-md mono" id="mcEval">—</dd></div>
           <div><dt class="t-label-md">Safety attached</dt><dd class="t-body-md mono" id="mcSafety">—</dd></div>
-          <div><dt class="t-label-md">Reproducibility command</dt><dd class="t-body-md"><code class="mono cmd" id="mcCmd">./pipeline.sh config/llama3.3-8b-domainX.yaml</code> <md-text-button id="btnCopyMc">Copy</md-text-button></dd></div>
+          <div><dt class="t-label-md">Reproducibility command</dt><dd class="t-body-md"><code class="mono cmd" id="mcCmd">./pipeline.sh config/llama-3.3-8b-7.yaml</code> <md-text-button id="btnCopyMc">Copy</md-text-button></dd></div>
         </dl>
       </div>
     </section>
@@ -236,7 +236,7 @@ python main.py</pre>
           <md-outlined-button id="btnCopyReal">Copy commands</md-outlined-button>
           <md-text-button id="btnCopyPipe">Copy ./pipeline.sh command</md-text-button>
         </div>
-        <p class="t-body-sm hint">Reproducibility entrypoint from the model card: <code class="mono">./pipeline.sh config/llama3.3-8b-domainX.yaml</code></p>
+        <p class="t-body-sm hint">Reproducibility entrypoint from the model card: <code class="mono" id="pipeHintCmd">./pipeline.sh config/llama-3.3-8b-7.yaml</code></p>
       </div>
     </section>
 

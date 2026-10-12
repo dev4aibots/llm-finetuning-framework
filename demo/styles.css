@@ -348,6 +348,10 @@ md-slider { width: 100%; --md-slider-active-track-color: var(--md-sys-color-prim
 .cmd { background: var(--md-sys-color-surface-container); border-radius: var(--md-sys-shape-corner-xs); padding: var(--md-sys-space-50) var(--md-sys-space-100); }
 
 /* ---- dialog ---- */
+/* BUG-29: a closed md-dialog must render nothing and intercept nothing.
+   The component keeps `display: contents` on its host, so enforce a hard
+   hide whenever it is not open — no invisible scrim/backdrop can linger. */
+md-dialog:not([open]) { display: none !important; }
 .dlg-content { min-width: min(560px, 80vw); }
 .dlg-meta { display: grid; grid-template-columns: auto 1fr; gap: var(--md-sys-space-50) var(--md-sys-space-200); margin: 0 0 var(--md-sys-space-200); }
 .dlg-meta dt { color: var(--md-sys-color-on-surface-variant); font: var(--md-sys-typescale-label-md); text-transform: uppercase; }

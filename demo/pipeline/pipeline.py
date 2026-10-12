@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import time
 from dataclasses import dataclass, field
 from typing import Callable
@@ -142,6 +143,12 @@ def stage_eval(m: Manifest, cfg: dict) -> Artifact:
     }, produced_by="lm-eval-harness")
 
 
+def _yaml_file_name(cfg: dict) -> str:
+    """Mirror of the demo frontend's yamlFileName(): config/<safe-base>-<seed>.yaml."""
+    safe = re.sub(r'[^a-zA-Z0-9._-]+', '-', str(cfg.get('base_model', ''))).strip('-') or 'model'
+    return f"config/{safe}-{cfg.get('seed', 0)}.yaml"
+
+
 def stage_model_card(m: Manifest, cfg: dict) -> Artifact:
     return Artifact("model_card", "report", {
         "standard": "MOF 2026",
@@ -149,7 +156,8 @@ def stage_model_card(m: Manifest, cfg: dict) -> Artifact:
         "training_config_hash": m.get("sft_checkpoint").content_hash(),
         "eval_attached": True,
         "safety_attached": True,
-        "reproducibility_command": "./pipeline.sh config/llama3.3-8b-domainX.yaml",
+        # BUG-28: derived from the actual run config, never a hardcoded placeholder.
+        "reproducibility_command": f"./pipeline.sh {_yaml_file_name(cfg)}",
     }, produced_by="mof-template")
 
 
