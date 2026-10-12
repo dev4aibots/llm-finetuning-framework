@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LLM Finetuning Framework — Interactive Pipeline Demo</title>
+<meta name="description" content="Configure, run, and inspect a deterministic 8-stage LLM fine-tuning pipeline: data hygiene, SFT, DPO, quantization, serving, eval, and model card.">
+<link rel="stylesheet" href="styles.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+
+<header class="topbar" id="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="#top" aria-label="Back to top">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 5h16v3H4zM4 10.5h16v3H4zM4 16h10v3H4z" fill="currentColor"/></svg>
+      </span>
+      <span class="brand-text">
+        <span class="t-title-md">LLM Finetuning Framework</span>
+        <span class="t-label-sm brand-sub">interactive pipeline demo</span>
+      </span>
+    </a>
+    <nav class="topbar-nav">
+      <md-text-button href="#composer">Configure</md-text-button>
+      <md-text-button href="#dag">DAG</md-text-button>
+      <md-text-button href="#eval">Eval</md-text-button>
+      <md-text-button href="#real">Run it for real</md-text-button>
+    </nav>
+    <div class="theme-toggle" role="group" aria-label="Color theme">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0-15v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4m0-14.2-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+      <md-switch id="themeSwitch" aria-label="Dark theme"></md-switch>
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 13.2A8.2 8.2 0 0 1 10.8 4 8.5 8.5 0 1 0 20 13.2z" fill="currentColor"/></svg>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap">
+
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="heroTitle">
+      <p class="t-label-sm overline">DEV4AIBOTS · PORTFOLIO DEMO</p>
+      <h1 class="t-headline-lg" id="heroTitle">Fine-tuning pipelines, made legible.</h1>
+      <p class="t-body-lg hero-sub">An interactive walkthrough of the <strong>llm-finetuning-framework</strong> scaffold — configure a run, watch all eight stages execute, and inspect every content-hashed artifact: data hygiene, SFT, DPO, quantization, serving, eval, and model card.</p>
+      <div class="hero-actions">
+        <md-filled-button href="#composer">Configure a run</md-filled-button>
+        <md-outlined-button href="#dag">Explore the DAG</md-outlined-button>
+      </div>
+      <div class="hero-stats" aria-label="Pipeline facts">
+        <div class="stat"><span class="t-display-lg stat-num">8</span><span class="t-label-md stat-label">pipeline stages</span></div>
+        <div class="stat"><span class="t-display-lg stat-num">12</span><span class="t-label-md stat-label">hex chars per content hash</span></div>
+        <div class="stat"><span class="t-display-lg stat-num">0</span><span class="t-label-md stat-label">GPUs required for this demo</span></div>
+      </div>
+    </section>
+
+    <!-- HONESTY BANNER -->
+    <section class="banner" aria-label="Simulation notice">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 2 1 21h22L12 2zm0 6 7.5 13h-15L12 8zm-1 4v4h2v-4h-2zm0 5v2h2v-2h-2z" fill="currentColor"/></svg>
+      <p class="t-body-md"><strong>Deterministic pipeline simulation (study scaffold):</strong> stage metrics are synthetic, computed exactly as the repo's main.py does. No real GPU training happens on this page — the backend replays the scaffold's own deterministic math so you can inspect the pipeline shape.</p>
+    </section>
+
+    <!-- COMPOSER -->
+    <section id="composer" aria-labelledby="composerTitle">
+      <h2 class="t-headline-sm" id="composerTitle">Pipeline config composer</h2>
+      <p class="t-body-md section-sub">Validation mirrors the API (<span class="mono">api/run.py</span>) exactly — required keys, integer ranges, and the <span class="mono">dpo_beta ∈ (0, 1]</span> constraint.</p>
+
+      <md-tabs id="composerTabs" aria-label="Composer view">
+        <md-primary-tab id="tabForm" aria-controls="panelForm">Form</md-primary-tab>
+        <md-primary-tab id="tabYaml" aria-controls="panelYaml">YAML preview</md-primary-tab>
+      </md-tabs>
+
+      <div class="card composer-card" id="panelForm" role="tabpanel" aria-labelledby="tabForm">
+        <div class="field-grid">
+          <md-outlined-text-field id="fBase" label="Base model" value="llama-3.3-8b" maxlength="64"
+            supporting-text="Hugging Face model id, max 64 characters"></md-outlined-text-field>
+          <md-outlined-text-field id="fSeed" label="Seed" type="number" value="7" min="0" max="2147483647" step="1"
+            supporting-text="Integer, 0 – 2147483647"></md-outlined-text-field>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-head">
+            <label class="t-title-sm" for="fRaw">Raw examples</label>
+            <md-outlined-text-field id="fRawNum" type="number" value="300000" min="1000" max="10000000" step="1000" aria-label="Raw examples (number)"></md-outlined-text-field>
+          </div>
+          <md-slider id="fRaw" min="1000" max="10000000" step="1000" value="300000" labeled aria-label="Raw examples"></md-slider>
+          <p class="t-body-sm hint"><span id="rawPretty">300,000</span> examples · kept after dedup/quality/PII: <span id="rawKept" class="mono">—</span></p>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-head">
+            <label class="t-title-sm" for="fBeta">DPO beta</label>
+            <span class="t-label-lg mono" id="betaVal">0.08</span>
+          </div>
+          <md-slider id="fBeta" min="0.01" max="1" step="0.01" value="0.08" labeled aria-label="DPO beta"></md-slider>
+          <p class="t-body-sm hint">Heads-up: the original scaffold <strong>hardcodes DPO β = 0.08</strong> in <span class="mono">stage_dpo</span> (main.py:105). This value is saved to your YAML config, but the stage math always uses the constant.</p>
+        </div>
+
+        <div class="composer-actions">
+          <md-filled-button id="btnRun">Run pipeline</md-filled-button>
+          <md-outlined-button id="btnYaml">
+            <svg slot="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Generate YAML config
+          </md-outlined-button>
+          <md-text-button id="btnCopyCmd">Copy reproducibility command</md-text-button>
+        </div>
+        <p class="t-body-sm hint mono" id="reproCmd">./pipeline.sh config/llama-3.3-8b-7.yaml</p>
+      </div>
+
+      <div class="card composer-card hidden" id="panelYaml" role="tabpanel" aria-labelledby="tabYaml">
+        <pre class="code mono" id="yamlPreview" aria-label="Generated YAML config"></pre>
+        <div class="composer-actions">
+          <md-outlined-button id="btnYaml2">Download .yaml</md-outlined-button>
+          <md-text-button id="btnCopyYaml">Copy YAML</md-text-button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RUN -->
+    <section id="run" aria-labelledby="runTitle">
+      <h2 class="t-headline-sm" id="runTitle">Pipeline run</h2>
+      <p class="t-body-md section-sub">The backend executes the real ported stage math and returns per-stage records; the reveal below plays them back in order with the scaffold's original CLI log format.</p>
+
+      <div class="card">
+        <div class="stepper" id="stepper" role="list" aria-label="Pipeline stages"></div>
+        <md-linear-progress id="runProgress" value="0" aria-label="Run progress"></md-linear-progress>
+        <div class="logwrap">
+          <div class="loghead t-label-md"><span>pipeline log</span><span id="logStatus">idle</span></div>
+          <pre class="log mono" id="log" aria-live="polite"><span class="log-dim">Press “Run pipeline” — or wait for the automatic first run.</span></pre>
+        </div>
+        <div class="errorstate hidden" id="errorState" role="alert">
+          <p class="t-title-md" id="errorTitle">Run failed</p>
+          <p class="t-body-md" id="errorMsg"></p>
+          <md-outlined-button id="btnRetry">
+            <svg slot="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 3v5h-5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Retry
+          </md-outlined-button>
+        </div>
+      </div>
+    </section>
+
+    <!-- DAG -->
+    <section id="dag" aria-labelledby="dagTitle">
+      <h2 class="t-headline-sm" id="dagTitle">Artifact dependency graph</h2>
+      <p class="t-body-md section-sub">Nodes are stages; edges are labeled with the <strong>content hash</strong> that flows between them. Click any node to inspect its artifact.</p>
+      <div class="card dag-card">
+        <svg id="dagSvg" viewBox="0 0 980 440" role="img" aria-label="Pipeline DAG: 8 stages connected by content-hashed artifacts"></svg>
+        <p class="t-body-sm hint">Contamination reads <span class="mono">dataset_hash</span> · eval reads <span class="mono">dpo_checkpoint</span> · serve reads <span class="mono">quants</span> · model card pins the SFT hash as <span class="mono">training_config_hash</span>.</p>
+      </div>
+    </section>
+
+    <!-- MANIFEST -->
+    <section id="manifest" aria-labelledby="manifestTitle">
+      <div class="section-head">
+        <div>
+          <h2 class="t-headline-sm" id="manifestTitle">Artifact manifest</h2>
+          <p class="t-body-md section-sub">Every artifact is content-addressed: <span class="mono">sha256(payload)[:12]</span>. Expand a row for the full payload.</p>
+        </div>
+        <md-outlined-button id="btnCopyManifest">Copy manifest JSON</md-outlined-button>
+      </div>
+      <div class="card table-card">
+        <table class="mtable" id="manifestTable">
+          <thead><tr><th scope="col">Name</th><th scope="col">Kind</th><th scope="col">Hash</th><th scope="col">Produced by</th><th scope="col"><span class="visually-hidden">Expand</span></th></tr></thead>
+          <tbody id="manifestBody"><tr><td colspan="5" class="t-body-md empty">No run yet — the manifest appears after the first pipeline run.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EVAL -->
+    <section id="eval" aria-labelledby="evalTitle">
+      <h2 class="t-headline-sm" id="evalTitle">Evaluation deltas</h2>
+      <p class="t-body-md section-sub">Simulated <span class="mono">lm-eval-harness</span> deltas vs. the base model, from the <span class="mono">eval_report</span> artifact.</p>
+      <div class="eval-grid">
+        <div class="card eval-card">
+          <div class="eval-row"><span class="t-title-md">MMLU-Pro</span><span class="t-label-lg mono delta">+3.2</span></div>
+          <md-linear-progress class="delta-bar" id="barMmlu" value="0" aria-label="MMLU-Pro delta"></md-linear-progress>
+          <div class="eval-row"><span class="t-title-md">MT-Bench-v2</span><span class="t-label-lg mono delta">+0.41</span></div>
+          <md-linear-progress class="delta-bar" id="barMt" value="0" aria-label="MT-Bench-v2 delta"></md-linear-progress>
+          <div class="eval-row"><span class="t-title-md">RewardBench-2</span><span class="t-label-lg mono delta">+0.08</span></div>
+          <md-linear-progress class="delta-bar" id="barRw" value="0" aria-label="RewardBench-2 delta"></md-linear-progress>
+        </div>
+        <div class="card gauge-card">
+          <svg class="gauge" viewBox="0 0 140 140" role="img" aria-label="LlamaGuard-4 safety pass rate 0.987">
+            <circle cx="70" cy="70" r="56" class="gauge-track"/>
+            <circle cx="70" cy="70" r="56" class="gauge-fill" id="gaugeFill"/>
+            <text x="70" y="66" text-anchor="middle" class="gauge-num t-display-lg" id="gaugeNum">—</text>
+            <text x="70" y="92" text-anchor="middle" class="gauge-cap t-label-md">pass rate</text>
+          </svg>
+          <p class="t-title-md">LlamaGuard-4</p>
+          <p class="t-body-sm hint">Safety gate on the DPO checkpoint.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVE -->
+    <section id="serve" aria-labelledby="serveTitle">
+      <h2 class="t-headline-sm" id="serveTitle">Serving metrics</h2>
+      <p class="t-body-md section-sub">Simulated deployment profile from the <span class="mono">endpoint</span> artifact — GPTQ-INT4-Marlin under vLLM with EAGLE-3 speculative decoding.</p>
+      <div class="serve-grid">
+        <div class="card stat-card"><p class="t-display-lg mono" id="svBackend">vLLM 0.7</p><p class="t-label-md">backend · + EAGLE-3</p></div>
+        <div class="card stat-card"><p class="t-display-lg mono">126<span class="t-title-lg"> ms</span></p><p class="t-label-md">p99 latency · batch 8</p></div>
+        <div class="card stat-card"><p class="t-display-lg mono">6,400</p><p class="t-label-md">tokens/sec · batch 32</p></div>
+        <div class="card stat-card"><p class="t-display-lg mono">$0.28</p><p class="t-label-md">per million tokens</p></div>
+      </div>
+      <p class="t-body-sm hint">EAGLE-3 draft acceptance: <span class="mono" id="svEagle">0.74</span> · quant: <span class="mono">GPTQ-INT4-Marlin</span> (4.6 GB) · AWQ 4.8 GB · GGUF Q4_K_M 5.1 GB</p>
+    </section>
+
+    <!-- MODEL CARD -->
+    <section id="modelcard" aria-labelledby="mcTitle">
+      <h2 class="t-headline-sm" id="mcTitle">Model card <span class="t-label-lg chip-mof">MOF 2026</span></h2>
+      <p class="t-body-md section-sub">Generated by the <span class="mono">model_card</span> stage from the run's own hashes.</p>
+      <div class="card">
+        <dl class="mc-list" id="mcList">
+          <div><dt class="t-label-md">Standard</dt><dd class="t-body-md mono">MOF 2026</dd></div>
+          <div><dt class="t-label-md">Data license declared</dt><dd class="t-body-md mono" id="mcLicense">—</dd></div>
+          <div><dt class="t-label-md">Training config hash</dt><dd class="t-body-md mono" id="mcTrainHash">—</dd></div>
+          <div><dt class="t-label-md">Eval attached</dt><dd class="t-body-md mono" id="mcEval">—</dd></div>
+          <div><dt class="t-label-md">Safety attached</dt><dd class="t-body-md mono" id="mcSafety">—</dd></div>
+          <div><dt class="t-label-md">Reproducibility command</dt><dd class="t-body-md"><code class="mono cmd" id="mcCmd">./pipeline.sh config/llama3.3-8b-domainX.yaml</code> <md-text-button id="btnCopyMc">Copy</md-text-button></dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- REAL TRAINING -->
+    <section id="real" aria-labelledby="realTitle">
+      <h2 class="t-headline-sm" id="realTitle">Real training runs on your machine</h2>
+      <p class="t-body-md section-sub">This page never trains — it replays the scaffold's deterministic math. To run the actual framework (needs Python and, for real training, GPUs), follow the repo's own quickstart:</p>
+      <div class="card">
+        <pre class="code mono" id="realCmds">git clone https://github.com/dev4aibots/llm-finetuning-framework.git
+cd llm-finetuning-framework
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python main.py</pre>
+        <div class="composer-actions">
+          <md-outlined-button id="btnCopyReal">Copy commands</md-outlined-button>
+          <md-text-button id="btnCopyPipe">Copy ./pipeline.sh command</md-text-button>
+        </div>
+        <p class="t-body-sm hint">Reproducibility entrypoint from the model card: <code class="mono">./pipeline.sh config/llama3.3-8b-domainX.yaml</code></p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <md-divider></md-divider>
+      <p class="t-body-sm">Demo of <a href="https://github.com/dev4aibots/llm-finetuning-framework">dev4aibots/llm-finetuning-framework</a> · deterministic simulation — no real training occurs on this page.</p>
+    </footer>
+
+  </div>
+</main>
+
+<!-- ARTIFACT DIALOG -->
+<md-dialog id="artifactDialog" aria-labelledby="dlgTitle">
+  <div slot="headline" id="dlgTitle" class="t-title-lg">Artifact</div>
+  <div slot="content" class="dlg-content">
+    <dl class="dlg-meta" id="dlgMeta"></dl>
+    <pre class="code mono dlg-payload" id="dlgPayload"></pre>
+  </div>
+  <div slot="actions">
+    <md-text-button id="dlgCopy">Copy payload</md-text-button>
+    <md-text-button id="dlgClose" dialogAction="close">Close</md-text-button>
+  </div>
+</md-dialog>
+
+<!-- SNACKBAR -->
+<div class="snackbar" id="snackbar" role="status" aria-live="polite" hidden>
+  <span class="t-body-md" id="snackText"></span>
+  <md-text-button id="snackAction">Dismiss</md-text-button>
+</div>
+
+</body>
+</html>
