@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sys
 import time
 from dataclasses import dataclass, field
 from typing import Callable
@@ -120,6 +121,9 @@ def stage_quantize(m: Manifest, cfg: dict) -> Artifact:
 def stage_serve(m: Manifest, cfg: dict) -> Artifact:
     quants = m.get("quants")
     return Artifact("endpoint", "endpoint", {
+        # The endpoint must name the weights it serves, otherwise "which
+        # artifact is production?" has no answer.
+        "from": quants.content_hash(),
         "backend": "vLLM 0.7 + EAGLE-3",
         "quant": "GPTQ-INT4-Marlin",
         "eagle_acceptance": 0.74,
@@ -145,6 +149,7 @@ def stage_model_card(m: Manifest, cfg: dict) -> Artifact:
         "standard": "MOF 2026",
         "data_license_declared": True,
         "training_config_hash": m.get("sft_checkpoint").content_hash(),
+        "eval_hash": m.get("eval_report").content_hash(),
         "eval_attached": True,
         "safety_attached": True,
         "reproducibility_command": "./pipeline.sh config/llama3.3-8b-domainX.yaml",
@@ -167,23 +172,67 @@ PIPELINE: list[tuple[str, Stage]] = [
 ]
 
 
-def run_pipeline(cfg: dict) -> Manifest:
+def validate_config(cfg: dict) -> dict:
+    """Fail with one clear message instead of a KeyError deep inside a stage."""
+    problems: list[str] = []
+    if not cfg.get("base_model"):
+        problems.append("base_model is required")
+    raw = cfg.get("raw_examples", 300_000)
+    if not isinstance(raw, int) or raw < 1:
+        problems.append("raw_examples must be a positive integer")
+    beta = cfg.get("dpo_beta", 0.08)
+    if not isinstance(beta, (int, float)) or not 0 < beta <= 1:
+        problems.append("dpo_beta must be in (0, 1]")
+    if problems:
+        raise ValueError("invalid pipeline config: " + "; ".join(problems))
+    return cfg
+
+
+def run_pipeline(cfg: dict, log: bool = True) -> Manifest:
+    """Execute every stage in order. `log=False` keeps stdout clean for JSON output."""
+    validate_config(cfg)
     m = Manifest()
     for name, stage_fn in PIPELINE:
-        print(f"[{name:14s}] running...")
+        if log:
+            print(f"[{name:14s}] running...")
         art = stage_fn(m, cfg)
         m.add(art)
-        print(f"[{name:14s}] -> artifact '{art.name}' hash={art.content_hash()}")
+        if log:
+            print(f"[{name:14s}] -> artifact '{art.name}' hash={art.content_hash()}")
     return m
 
 
-def main() -> None:
+def as_report(m: Manifest) -> dict:
+    """Machine-readable run record: what was produced, by which stage, from which hash."""
+    return {
+        "pipeline": [name for name, _ in PIPELINE],
+        "artifacts": [
+            {
+                "name": a.name,
+                "kind": a.kind,
+                "hash": a.content_hash(),
+                "produced_by": a.produced_by,
+                "payload": a.payload,
+            }
+            for a in m.artifacts.values()
+        ],
+    }
+
+
+def main(argv: list[str] | None = None) -> None:
+    args = sys.argv[1:] if argv is None else argv
     cfg = {
         "base_model": "llama-3.3-8b",
         "raw_examples": 300_000,
         "seed": 7,
         "dpo_beta": 0.08,
     }
+
+    if "--json" in args:
+        m = run_pipeline(cfg, log=False)
+        print(json.dumps(as_report(m), indent=2, sort_keys=True))
+        return
+
     print("=== fine-tuning pipeline run ===")
     m = run_pipeline(cfg)
     print()

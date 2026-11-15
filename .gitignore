@@ -1,0 +1,6 @@
+﻿__pycache__/
+*.pyc
+first.json
+second.json
+venv/
+.venv/

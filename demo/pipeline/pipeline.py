@@ -123,6 +123,8 @@ def stage_quantize(m: Manifest, cfg: dict) -> Artifact:
 def stage_serve(m: Manifest, cfg: dict) -> Artifact:
     quants = m.get("quants")
     return Artifact("endpoint", "endpoint", {
+        # Same lineage rule as main.py: the endpoint names the weights it serves.
+        "from": quants.content_hash(),
         "backend": "vLLM 0.7 + EAGLE-3",
         "quant": "GPTQ-INT4-Marlin",
         "eagle_acceptance": 0.74,
@@ -154,6 +156,7 @@ def stage_model_card(m: Manifest, cfg: dict) -> Artifact:
         "standard": "MOF 2026",
         "data_license_declared": True,
         "training_config_hash": m.get("sft_checkpoint").content_hash(),
+        "eval_hash": m.get("eval_report").content_hash(),
         "eval_attached": True,
         "safety_attached": True,
         # BUG-28: derived from the actual run config, never a hardcoded placeholder.
